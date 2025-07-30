@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import ProductGrid from "@/components/ProductGrid";
 import { prisma } from "@/lib/prisma";
 
-// ✅ Revalida cada 5 min
+// ✅ Revalidate cada 5 min
 export const revalidate = 300;
 
 export const metadata = {
@@ -12,7 +12,7 @@ export const metadata = {
   description: "Explora todos nuestros productos disponibles.",
 };
 
-// ✅ Helpers de datos — moverlos a /lib si prefieres
+// ✅ Helpers de datos — mejor moverlos a /lib si crecen
 async function getCategories() {
   return prisma.category.findMany();
 }
@@ -24,13 +24,17 @@ async function getProducts(categoryId?: string) {
   });
 }
 
-// ✅ Tipado de props
-export default async function CatalogPage({
-  searchParams,
-}: {
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
-  const categoryId = typeof searchParams?.categoryId === "string" ? searchParams.categoryId : undefined;
+// ✅ Tipado explícito Next.js App Router
+interface PageProps {
+  params: {}; // Si no tienes [slug] dinámicos, déjalo vacío
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function CatalogPage({ searchParams }: PageProps) {
+  const categoryId =
+    typeof searchParams?.categoryId === "string"
+      ? searchParams.categoryId
+      : undefined;
 
   const [products, categories] = await Promise.all([
     getProducts(categoryId),
@@ -51,7 +55,6 @@ export default async function CatalogPage({
         <div className="absolute inset-0 bg-white/80"></div>
       </div>
 
-      {/* Contenido */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold mb-8">Catálogo</h1>
 
