@@ -11,11 +11,14 @@ export default function HeaderActions() {
   const { cart } = useCart();
   const { wishlist } = useWishlist();
   const { data: session } = useSession();
+
+  // ✅ Calcula total de items en carrito
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  // ✅ Cierra menú usuario si hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -30,8 +33,9 @@ export default function HeaderActions() {
 
   return (
     <div className="flex items-center gap-4 md:gap-6 relative text-white">
-      {session && (
+      {session ? (
         <>
+          {/* ❤️ Wishlist */}
           <Link href="/wishlist" className="relative" aria-label="Wishlist">
             <FaHeart className="w-5 h-5 text-white" />
             {wishlist.length > 0 && (
@@ -41,6 +45,7 @@ export default function HeaderActions() {
             )}
           </Link>
 
+          {/* 🛒 Carrito */}
           <Link href="/cart" className="relative" aria-label="Carrito">
             <FaShoppingCart className="w-5 h-5 text-white" />
             {cartCount > 0 && (
@@ -50,20 +55,20 @@ export default function HeaderActions() {
             )}
           </Link>
 
-          {/* 👤 SOLO DESKTOP */}
+          {/* 👤 Cuenta (solo Desktop) */}
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="hidden md:flex items-center gap-1 text-sm text-white hover:text-[#F97316] transition"
+            className="hidden md:flex items-center gap-1 text-sm hover:text-[#F97316] transition"
           >
             <FaUser className="w-5 h-5 text-white" />
             <span>Cuenta</span>
           </button>
 
-          {/* Dropdown SOLO DESKTOP */}
+          {/* Menú desplegable usuario */}
           {showUserMenu && (
             <div
               ref={menuRef}
-              className="hidden md:flex absolute top-full right-0 mt-2 w-40 bg-[#1F2937] text-white border border-gray-700 shadow-lg rounded-md flex-col z-50"
+              className="hidden md:flex absolute top-full right-0 mt-2 w-40 bg-[#1F2937] border border-gray-700 shadow-lg rounded-md flex-col z-50"
             >
               <Link
                 href="/account"
@@ -84,14 +89,12 @@ export default function HeaderActions() {
             </div>
           )}
         </>
-      )}
-
-      {!session && (
+      ) : (
         <button
           onClick={() => signIn()}
-          className="hidden md:flex items-center gap-1 text-sm text-white hover:text-[#F97316] transition"
+          className="hidden md:flex items-center gap-1 text-sm hover:text-[#F97316] transition"
         >
-          <FaUser className="w-5 h-5 text-white" /> {/* ✅ color explícito */}
+          <FaUser className="w-5 h-5 text-white" />
           <span>Login</span>
         </button>
       )}

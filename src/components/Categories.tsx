@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-// ✅ Imágenes Cloudinary subidas
+// ✅ Imágenes Cloudinary subidas y URLS limpias
 const categories = [
   {
     name: "Hombre",
@@ -30,23 +30,24 @@ const categories = [
 export default function Categories() {
   return (
     <section className="relative max-w-7xl mx-auto px-4 py-16 overflow-hidden rounded-xl">
-      {/* Fondo con textura y overlay morado más transparente */}
+      {/* Fondo texturizado + overlay morado */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/FondoTextura.jpg"
           alt="Textura de fondo"
           fill
           className="object-cover"
-          priority // Fondo, sí va con prioridad
+          priority
         />
         <div className="absolute inset-0 bg-[#6B21A8]/50"></div>
       </div>
 
-      {/* Contenido */}
+      {/* Título */}
       <h2 className="relative z-10 text-3xl md:text-4xl font-bold mb-8 text-center text-white">
         Categorías Destacadas
       </h2>
 
+      {/* Grid de categorías */}
       <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-6">
         {categories.map((cat, index) => (
           <Link
@@ -56,10 +57,10 @@ export default function Categories() {
           >
             <div className="relative w-full h-48">
               <Image
-                src={cat.image || "/placeholder.jpg"} // ✅ Fallback robusto
+                src={cat.image || "/placeholder.jpg"}
                 alt={cat.name}
                 fill
-                priority={index === 0} // ✅ Solo la primera imagen tiene prioridad
+                priority={index === 0}
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 25vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
               />

@@ -70,10 +70,13 @@ export default async function ProductPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             {safeProduct.image ? (
-              <img
+              <Image
                 src={safeProduct.image}
                 alt={safeProduct.name}
-                className="w-full h-96 object-cover rounded"
+                width={600}
+                height={384} // 16:10 ratio aproximado para h-96 (384px)
+                className="rounded object-cover"
+                priority
               />
             ) : (
               <div className="w-full h-96 bg-gray-200 flex items-center justify-center rounded">

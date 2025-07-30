@@ -13,7 +13,7 @@ export default function SuccessPage() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden">
+    <section className="relative w-full overflow-hidden min-h-screen flex items-center justify-center">
       {/* Fondo texturizado */}
       <div className="absolute inset-0 -z-10">
         <Image

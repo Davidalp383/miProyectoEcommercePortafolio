@@ -5,6 +5,10 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+type CheckoutResponse = {
+  url?: string;
+};
+
 export default function CartPage() {
   const { cart, removeFromCart, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
@@ -17,8 +21,6 @@ export default function CartPage() {
     setLoading(true);
 
     try {
-      console.log("Carrito que se envía:", cart);
-
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -27,9 +29,7 @@ export default function CartPage() {
         body: JSON.stringify({ cart }),
       });
 
-      console.log("Res status:", res.status);
-
-      let data = {};
+      let data: CheckoutResponse = {};
       try {
         data = await res.json();
       } catch (err) {
@@ -39,10 +39,8 @@ export default function CartPage() {
         return;
       }
 
-      console.log("Checkout response:", data);
-
-      if ((data as any).url) {
-        window.location.href = (data as any).url;
+      if (data.url) {
+        window.location.href = data.url;
       } else {
         setLoading(false);
         alert(
@@ -84,9 +82,11 @@ export default function CartPage() {
                   className="flex items-center gap-4 border p-4 rounded bg-white"
                 >
                   {item.image && (
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={80}
+                      height={80}
                       className="w-20 h-20 object-cover rounded"
                     />
                   )}

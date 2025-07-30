@@ -11,13 +11,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <HeaderLogo />
 
-        {/* Navegación Desktop */}
+        {/* ✅ Navegación Desktop */}
         <HeaderNavDesktop />
 
         <HeaderActions />
       </div>
 
-      {/* Navegación Mobile */}
+      {/* ✅ Navegación Mobile */}
       <HeaderNavMobile />
     </header>
   );

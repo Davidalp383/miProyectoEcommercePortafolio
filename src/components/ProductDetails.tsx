@@ -6,7 +6,19 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useSession, signIn } from "next-auth/react";
 import { useState, useTransition } from "react";
 
-export default function ProductDetails({ product }: { product: any }) {
+// ✅ Tipo bien definido
+type Product = {
+  id: number;
+  name: string;
+  description: string;
+  slug: string;
+  image: string | null;
+  price: number;
+  offerPrice?: number | null;
+  isOnOffer?: boolean;
+};
+
+export default function ProductDetails({ product }: { product: Product }) {
   const { cart, addToCart } = useCart();
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { data: session } = useSession();
@@ -14,7 +26,6 @@ export default function ProductDetails({ product }: { product: any }) {
   const isAdded = cart.some((item) => item.id === product.id);
   const isWishlisted = wishlist.some((item) => item.id === product.id);
 
-  // ✅ Tip: Transición para evitar bloqueo UI al añadir
   const [isPending, startTransition] = useTransition();
   const [localAdded, setLocalAdded] = useState(isAdded);
 
@@ -33,7 +44,7 @@ export default function ProductDetails({ product }: { product: any }) {
             ? product.offerPrice
             : product.price,
         slug: product.slug,
-        image: product.image,
+        image: product.image ?? undefined, // ✅ Fix: convierte null a undefined
         quantity: 1,
       });
       setLocalAdded(true);
@@ -57,7 +68,7 @@ export default function ProductDetails({ product }: { product: any }) {
             ? product.offerPrice
             : product.price,
         slug: product.slug,
-        image: product.image,
+        image: product.image ?? undefined, // ✅ Fix aquí también
       });
     }
   };

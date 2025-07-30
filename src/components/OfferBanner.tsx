@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-// ✅ ISR para que se cachee 5 min
+// ✅ ISR: cachea 5 minutos
 export const revalidate = 300;
 
 type Product = {
@@ -16,12 +16,13 @@ type Product = {
 export default async function OfferBanner() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/offers`,
-    { next: { revalidate: 300 } } // ✅ Usa ISR nativo Next 13+
+    { next: { revalidate: 300 } }
   );
 
   const offers: Product[] = await res.json();
-
-  const offer = offers.length > 0 ? offers[Math.floor(Math.random() * offers.length)] : null;
+  const offer = offers.length > 0
+    ? offers[Math.floor(Math.random() * offers.length)]
+    : null;
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -74,6 +75,7 @@ export default async function OfferBanner() {
                 alt={offer.name}
                 fill
                 className="object-cover w-full h-full"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </Link>
           ) : (
@@ -82,6 +84,7 @@ export default async function OfferBanner() {
               alt="Oferta especial"
               fill
               className="object-cover w-full h-full"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           )}
         </div>

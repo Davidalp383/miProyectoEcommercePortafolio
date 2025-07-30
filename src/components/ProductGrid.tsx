@@ -3,7 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 
-export default function ProductGrid({ products }: { products: any[] }) {
+type Product = {
+  id: number;
+  slug: string;
+  name: string;
+  price: number;
+  image?: string | null;
+  category?: {
+    name: string;
+  } | null;
+};
+
+export default function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
       {products.map((product) => (
@@ -28,7 +39,7 @@ export default function ProductGrid({ products }: { products: any[] }) {
             )}
           </div>
           <h2 className="text-sm font-semibold">{product.name}</h2>
-          <p className="text-sm text-gray-500">${product.price}</p>
+          <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
           <p className="text-xs text-gray-400">
             {product.category?.name ?? "Sin categoría"}
           </p>

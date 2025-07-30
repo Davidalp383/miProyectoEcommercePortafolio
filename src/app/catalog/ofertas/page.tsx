@@ -61,13 +61,17 @@ export default async function OfertasPage() {
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform"
                   />
                 ) : (
-                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                    Sin imagen
-                  </div>
+                  <Image
+                    src="/placeholder.jpg" // Coloca una imagen placeholder en /public/placeholder.jpg
+                    alt="Sin imagen"
+                    width={500}
+                    height={500}
+                    className="w-full h-64 object-cover"
+                  />
                 )}
 
                 {/* Badge de descuento */}
-                {p.offerPrice && (
+                {p.offerPrice !== null && p.offerPrice < p.price && (
                   <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                     -{Math.round(100 - (p.offerPrice / p.price) * 100)}%
                   </span>
@@ -80,7 +84,7 @@ export default async function OfertasPage() {
                       ${p.price.toFixed(2)}
                     </span>
                     <span className="text-red-600 font-bold text-base">
-                      ${p.offerPrice?.toFixed(2)}
+                      {p.offerPrice !== null ? `$${p.offerPrice.toFixed(2)}` : ""}
                     </span>
                   </div>
                 </div>

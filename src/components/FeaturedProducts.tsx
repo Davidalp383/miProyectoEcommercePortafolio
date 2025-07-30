@@ -10,17 +10,18 @@ type Product = {
   slug: string;
 };
 
+// ⏱️ Revalida cada 5 minutos
 export const revalidate = 300;
 
 export default async function FeaturedProducts() {
-  // 🟢 Busca hasta 4 en oferta
+  // 🔍 Busca hasta 4 productos en oferta
   const offers: Product[] = await prisma.product.findMany({
     where: { isOnOffer: true },
     orderBy: { createdAt: "desc" },
     take: 4,
   });
 
-  // Si no hay suficientes, completa con otros
+  // Completa con otros si faltan
   let products = offers;
 
   if (offers.length < 4) {
@@ -29,21 +30,24 @@ export default async function FeaturedProducts() {
       orderBy: { createdAt: "desc" },
       take: 4 - offers.length,
     });
-
     products = [...offers, ...extra];
   }
 
+  // Si no hay nada, no renderiza sección
   if (products.length === 0) return null;
 
   return (
     <section className="relative max-w-7xl mx-auto px-4 py-16 overflow-hidden">
+      {/* Fondo texturizado + overlay blanco */}
       <div className="absolute inset-0 z-0 bg-[url('/FondoTextura.jpg')] bg-cover bg-center opacity-20"></div>
-      <div className="absolute inset-0 z-0 bg-[#FFFFFF]/70"></div>
+      <div className="absolute inset-0 z-0 bg-white/70"></div>
 
+      {/* Título */}
       <h2 className="relative z-10 text-3xl font-bold mb-8 text-center text-[#1C1C1E] font-montserrat">
         Productos Destacados
       </h2>
 
+      {/* Grid */}
       <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
           <Link
@@ -56,8 +60,8 @@ export default async function FeaturedProducts() {
                 src={product.image || "/placeholder.jpg"}
                 alt={product.name}
                 fill
-                className="object-cover group-hover:scale-110 transition-transform duration-300"
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 25vw"
+                className="object-cover group-hover:scale-110 transition-transform duration-300"
               />
             </div>
             <div className="p-4 bg-white/90 backdrop-blur-sm">
