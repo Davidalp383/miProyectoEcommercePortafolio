@@ -7,7 +7,7 @@ import Testimonials from "@/components/Testimonials";
 // ✅ Incremental Static Regeneration (ISR): rebuild cada 60 segundos
 export const revalidate = 60;
 
-export default function HomePage() {
+export default function HomePage(_props: {}) {
   return (
     <main>
       <Hero />
@@ -18,3 +18,4 @@ export default function HomePage() {
     </main>
   );
 }
+
