@@ -1,0 +1,44 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  offerPrice  Float?   // 🔥 Nuevo: precio de oferta (nullable)
+  isOnOffer   Boolean  @default(false) // 🔥 Nuevo: ¿está en oferta?
+  slug        String   @unique
+  image       String?
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id       Int       @id @default(autoincrement()) 
+  name     String
+  products Product[]
+}
+
+model User {
+  id       String  @id @default(cuid())
+  email    String  @unique
+  name     String?
+  password String
+  orders   Order[]
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime @default(now())
+  total      Float
+}
