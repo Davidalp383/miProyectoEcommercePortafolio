@@ -5,7 +5,7 @@ import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 
-// ✅ Configuración de fuentes
+// ✅ Configuración de fuentes Google
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,13 +28,16 @@ const sourceSans = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
-// ✅ Metadata global (ajústala para producción)
+// ✅ Metadata global
 export const metadata: Metadata = {
-  title: "Mi Ecommerce | Nexus",
+  title: {
+    default: "Mi Ecommerce | Nexus",
+    template: "%s | Nexus",
+  },
   description: "Explora productos tecnológicos con estilo.",
 };
 
-// ✅ Layout principal
+// ✅ Layout raíz con Providers correcto
 export default function RootLayout({
   children,
 }: {

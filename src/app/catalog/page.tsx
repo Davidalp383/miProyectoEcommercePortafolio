@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import ProductGrid from "@/components/ProductGrid";
 import { prisma } from "@/lib/prisma";
 
+// ✅ Revalida cada 5 min
 export const revalidate = 300;
 
 export const metadata = {
@@ -11,6 +12,7 @@ export const metadata = {
   description: "Explora todos nuestros productos disponibles.",
 };
 
+// ✅ Helpers de datos — moverlos a /lib si prefieres
 async function getCategories() {
   return prisma.category.findMany();
 }
@@ -22,12 +24,13 @@ async function getProducts(categoryId?: string) {
   });
 }
 
+// ✅ Tipado de props
 export default async function CatalogPage({
   searchParams,
 }: {
-  searchParams: { categoryId?: string };
+  searchParams?: Record<string, string | string[] | undefined>;
 }) {
-  const categoryId = searchParams.categoryId ?? "";
+  const categoryId = typeof searchParams?.categoryId === "string" ? searchParams.categoryId : undefined;
 
   const [products, categories] = await Promise.all([
     getProducts(categoryId),
