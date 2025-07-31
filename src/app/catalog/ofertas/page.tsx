@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -11,36 +14,33 @@ type Product = {
   image: string | null;
 };
 
-export default async function OfertasPage() {
-  // ✅ Usa variable controlada para prod y local
-  const baseUrl =
-    process.env.NODE_ENV === "production"
-      ? process.env.NEXT_PUBLIC_SITE_URL
-      : "http://localhost:3000";
+export default function OfertasPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (
-    process.env.NODE_ENV === "production" &&
-    !process.env.NEXT_PUBLIC_SITE_URL
-  ) {
-    throw new Error(
-      "❌ NEXT_PUBLIC_SITE_URL no está definido en producción. Configúralo en tu .env y en Vercel."
-    );
-  }
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const res = await fetch("/api/products/offers");
+        if (!res.ok) {
+          console.error(
+            "API /api/products/offers failed:",
+            res.status,
+            res.statusText
+          );
+          throw new Error("Failed to fetch offers");
+        }
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("❌ Error al traer ofertas:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const res = await fetch(`${baseUrl}/api/products/offers`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    console.error(
-      "API /api/products/offers failed:",
-      res.status,
-      res.statusText
-    );
-    throw new Error("Failed to fetch offers");
-  }
-
-  const products: Product[] = await res.json();
+    fetchOffers();
+  }, []);
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -62,7 +62,9 @@ export default async function OfertasPage() {
           Ofertas Especiales
         </h1>
 
-        {products.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-gray-600">Cargando ofertas...</p>
+        ) : products.length === 0 ? (
           <p className="text-center text-gray-600">
             No hay productos en oferta actualmente.
           </p>
