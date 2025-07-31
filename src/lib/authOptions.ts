@@ -1,4 +1,5 @@
 // ✅ src/lib/authOptions.ts
+
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
@@ -21,21 +22,25 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
-        if (!user) throw new Error("No user found");
+        if (!user) {
+          throw new Error("No user found");
+        }
 
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password!
         );
 
-        if (!isValid) throw new Error("Contraseña incorrecta");
+        if (!isValid) {
+          throw new Error("Contraseña incorrecta");
+        }
 
         return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
   pages: {
-    signIn: "/accounts/signin"
+    signIn: "/accounts/signin", // ✅ Coincide EXACTAMENTE con tu ruta de página
   },
   session: {
     strategy: "jwt",

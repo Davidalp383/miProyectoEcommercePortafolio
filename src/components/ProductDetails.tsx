@@ -19,16 +19,16 @@ export default function ProductDetails({ product }: { product: Product }) {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { data: session } = useSession();
 
-  // ✅ No uses estado local para "added" → puede desincronizarse
   const isAdded = cart.some((item) => item.id === product.id);
   const isWishlisted = wishlist.some((item) => item.id === product.id);
 
   const [isAdding, setIsAdding] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
-  const finalPrice = product.isOnOffer && product.offerPrice
-    ? product.offerPrice
-    : product.price;
+  const finalPrice =
+    product.isOnOffer && typeof product.offerPrice === "number"
+      ? product.offerPrice
+      : product.price;
 
   const handleAddToCart = async () => {
     if (!session) {
@@ -46,10 +46,8 @@ export default function ProductDetails({ product }: { product: Product }) {
         image: product.image ?? undefined,
         quantity: 1,
       });
-      // ✅ No usamos estado local: confiamos en el contexto
     } catch (error) {
       console.error("Error adding to cart:", error);
-      // Podrías mostrar un toast o mensaje de error aquí
     } finally {
       setIsAdding(false);
     }
@@ -90,7 +88,9 @@ export default function ProductDetails({ product }: { product: Product }) {
         <button
           onClick={toggleWishlist}
           disabled={isTogglingWishlist}
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={
+            isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+          }
           className="disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isWishlisted ? (
@@ -105,13 +105,15 @@ export default function ProductDetails({ product }: { product: Product }) {
         {product.description}
       </p>
 
-      {product.isOnOffer && product.offerPrice ? (
+      {product.isOnOffer && typeof product.offerPrice === "number" ? (
         <div className="mb-4">
           <p className="text-gray-500 line-through">
-            ${product.price.toFixed(2)}
+            {typeof product.price === "number"
+              ? `$${product.price.toFixed(2)}`
+              : "Precio no disponible"}
           </p>
           <p className="text-[#6B21A8] font-bold text-xl">
-            ${finalPrice.toFixed(2)}
+            ${product.offerPrice.toFixed(2)}
           </p>
           <span className="inline-block bg-[#F97316] text-white px-2 py-1 text-xs rounded mt-1">
             ¡En oferta!
@@ -119,7 +121,9 @@ export default function ProductDetails({ product }: { product: Product }) {
         </div>
       ) : (
         <p className="mb-4 font-semibold text-xl text-[#6B21A8]">
-          ${finalPrice.toFixed(2)}
+          {typeof finalPrice === "number"
+            ? `$${finalPrice.toFixed(2)}`
+            : "Precio no disponible"}
         </p>
       )}
 
@@ -132,9 +136,7 @@ export default function ProductDetails({ product }: { product: Product }) {
         onClick={handleAddToCart}
         disabled={isAdded || isAdding}
         aria-label={
-          isAdded
-            ? "Producto ya agregado al carrito"
-            : "Agregar al carrito"
+          isAdded ? "Producto ya agregado al carrito" : "Agregar al carrito"
         }
       >
         {isAdding ? "Agregando..." : isAdded ? "¡Agregado!" : "Agregar al carrito"}

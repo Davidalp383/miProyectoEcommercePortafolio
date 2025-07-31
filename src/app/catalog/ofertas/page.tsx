@@ -1,12 +1,10 @@
-// src/app/catalog/ofertas/page.tsx
-
 import Link from "next/link";
 import Image from "next/image";
 
 type Product = {
   id: number;
   name: string;
-  price: number;
+  price: number | null;
   offerPrice: number | null;
   isOnOffer: boolean;
   slug: string;
@@ -14,11 +12,30 @@ type Product = {
 };
 
 export default async function OfertasPage() {
-  const res = await fetch(
-    `${process.env.NODE_ENV === "production" ? "https://" + process.env.VERCEL_URL : "http://localhost:3000"}/api/products/offers`,
-    { cache: "no-store" }
-);
+  // ✅ Usa variable controlada, más robusta que VERCEL_URL directo
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : "http://localhost:3000";
 
+  if (!baseUrl) {
+    throw new Error(
+      "❌ NEXT_PUBLIC_SITE_URL no está definido en producción. Configúralo en tu .env y en Vercel."
+    );
+  }
+
+  const res = await fetch(`${baseUrl}/api/products/offers`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error(
+      "API /api/products/offers failed:",
+      res.status,
+      res.statusText
+    );
+    throw new Error("Failed to fetch offers");
+  }
 
   const products: Product[] = await res.json();
 
@@ -72,21 +89,31 @@ export default async function OfertasPage() {
                   />
                 )}
 
-                {p.offerPrice !== null && p.offerPrice < p.price && (
-                  <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    -{Math.round(100 - (p.offerPrice / p.price) * 100)}%
-                  </span>
-                )}
+                {typeof p.offerPrice === "number" &&
+                  typeof p.price === "number" &&
+                  p.offerPrice < p.price && (
+                    <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      -
+                      {Math.round(
+                        100 - (p.offerPrice / p.price) * 100
+                      )}
+                      %
+                    </span>
+                  )}
 
                 <div className="p-4">
                   <h2 className="text-lg font-semibold mb-1">{p.name}</h2>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-500 line-through text-sm">
-                      ${p.price.toFixed(2)}
-                    </span>
-                    <span className="text-red-600 font-bold text-base">
-                      {p.offerPrice !== null ? `$${p.offerPrice.toFixed(2)}` : ""}
-                    </span>
+                    {typeof p.price === "number" && (
+                      <span className="text-gray-500 line-through text-sm">
+                        ${p.price.toFixed(2)}
+                      </span>
+                    )}
+                    {typeof p.offerPrice === "number" && (
+                      <span className="text-red-600 font-bold text-base">
+                        ${p.offerPrice.toFixed(2)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Link>
