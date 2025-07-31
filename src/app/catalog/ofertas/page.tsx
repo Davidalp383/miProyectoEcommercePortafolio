@@ -12,13 +12,16 @@ type Product = {
 };
 
 export default async function OfertasPage() {
-  // ✅ Usa variable controlada, más robusta que VERCEL_URL directo
+  // ✅ Usa variable controlada para prod y local
   const baseUrl =
     process.env.NODE_ENV === "production"
       ? process.env.NEXT_PUBLIC_SITE_URL
       : "http://localhost:3000";
 
-  if (!baseUrl) {
+  if (
+    process.env.NODE_ENV === "production" &&
+    !process.env.NEXT_PUBLIC_SITE_URL
+  ) {
     throw new Error(
       "❌ NEXT_PUBLIC_SITE_URL no está definido en producción. Configúralo en tu .env y en Vercel."
     );
@@ -94,10 +97,7 @@ export default async function OfertasPage() {
                   p.offerPrice < p.price && (
                     <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                       -
-                      {Math.round(
-                        100 - (p.offerPrice / p.price) * 100
-                      )}
-                      %
+                      {Math.round(100 - (p.offerPrice / p.price) * 100)}%
                     </span>
                   )}
 
