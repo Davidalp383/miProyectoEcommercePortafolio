@@ -4,18 +4,14 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishListContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useSession, signIn } from "next-auth/react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
-// ✅ Tipo bien definido
-type Product = {
-  id: number;
-  name: string;
-  description: string;
-  slug: string;
-  image: string | null;
-  price: number;
-  offerPrice?: number | null;
-  isOnOffer?: boolean;
+// ✅ Usa el tipo real de Prisma (mejor mantenimiento)
+import { Product as PrismaProduct } from "@prisma/client";
+
+// ✅ Ajusta si tienes relación con Category u otros modelos
+type Product = PrismaProduct & {
+  category?: { name: string };
 };
 
 export default function ProductDetails({ product }: { product: Product }) {
@@ -23,53 +19,65 @@ export default function ProductDetails({ product }: { product: Product }) {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { data: session } = useSession();
 
+  // ✅ No uses estado local para "added" → puede desincronizarse
   const isAdded = cart.some((item) => item.id === product.id);
   const isWishlisted = wishlist.some((item) => item.id === product.id);
 
-  const [isPending, startTransition] = useTransition();
-  const [localAdded, setLocalAdded] = useState(isAdded);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
-  const handleAddToCart = () => {
+  const finalPrice = product.isOnOffer && product.offerPrice
+    ? product.offerPrice
+    : product.price;
+
+  const handleAddToCart = async () => {
     if (!session) {
       signIn();
       return;
     }
 
-    startTransition(() => {
-      addToCart({
+    setIsAdding(true);
+    try {
+      await addToCart({
         id: product.id,
         name: product.name,
-        price:
-          product.isOnOffer && product.offerPrice
-            ? product.offerPrice
-            : product.price,
+        price: finalPrice,
         slug: product.slug,
-        image: product.image ?? undefined, // ✅ Fix: convierte null a undefined
+        image: product.image ?? undefined,
         quantity: 1,
       });
-      setLocalAdded(true);
-    });
+      // ✅ No usamos estado local: confiamos en el contexto
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      // Podrías mostrar un toast o mensaje de error aquí
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  const toggleWishlist = () => {
+  const toggleWishlist = async () => {
     if (!session) {
       signIn();
       return;
     }
 
-    if (isWishlisted) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist({
-        id: product.id,
-        name: product.name,
-        price:
-          product.isOnOffer && product.offerPrice
-            ? product.offerPrice
-            : product.price,
-        slug: product.slug,
-        image: product.image ?? undefined, // ✅ Fix aquí también
-      });
+    setIsTogglingWishlist(true);
+    try {
+      if (isWishlisted) {
+        await removeFromWishlist(product.id);
+      } else {
+        await addToWishlist({
+          id: product.id,
+          name: product.name,
+          price: finalPrice,
+          slug: product.slug,
+          image: product.image ?? undefined,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setIsTogglingWishlist(false);
     }
   };
 
@@ -79,11 +87,16 @@ export default function ProductDetails({ product }: { product: Product }) {
         <h2 className="text-2xl md:text-3xl font-bold text-[#1C1C1E]">
           {product.name}
         </h2>
-        <button onClick={toggleWishlist} aria-label="Wishlist">
+        <button
+          onClick={toggleWishlist}
+          disabled={isTogglingWishlist}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className="disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {isWishlisted ? (
-            <FaHeart className="text-[#F97316] w-6 h-6 transition" />
+            <FaHeart className="text-[#F97316] w-6 h-6 transition duration-200" />
           ) : (
-            <FaRegHeart className="text-gray-400 w-6 h-6 transition hover:text-[#F97316]" />
+            <FaRegHeart className="text-gray-400 w-6 h-6 transition duration-200 hover:text-[#F97316]" />
           )}
         </button>
       </div>
@@ -98,7 +111,7 @@ export default function ProductDetails({ product }: { product: Product }) {
             ${product.price.toFixed(2)}
           </p>
           <p className="text-[#6B21A8] font-bold text-xl">
-            ${product.offerPrice.toFixed(2)}
+            ${finalPrice.toFixed(2)}
           </p>
           <span className="inline-block bg-[#F97316] text-white px-2 py-1 text-xs rounded mt-1">
             ¡En oferta!
@@ -106,20 +119,25 @@ export default function ProductDetails({ product }: { product: Product }) {
         </div>
       ) : (
         <p className="mb-4 font-semibold text-xl text-[#6B21A8]">
-          ${product.price.toFixed(2)}
+          ${finalPrice.toFixed(2)}
         </p>
       )}
 
       <button
-        className={`px-6 py-3 rounded font-semibold transition ${
-          localAdded || isAdded || isPending
+        className={`px-6 py-3 rounded font-semibold transition-colors ${
+          isAdded || isAdding
             ? "bg-green-600 cursor-not-allowed"
             : "bg-[#6B21A8] hover:bg-[#5a1a8f]"
         } text-white`}
         onClick={handleAddToCart}
-        disabled={localAdded || isAdded || isPending}
+        disabled={isAdded || isAdding}
+        aria-label={
+          isAdded
+            ? "Producto ya agregado al carrito"
+            : "Agregar al carrito"
+        }
       >
-        {localAdded || isAdded ? "¡Agregado!" : "Agregar al carrito"}
+        {isAdding ? "Agregando..." : isAdded ? "¡Agregado!" : "Agregar al carrito"}
       </button>
     </div>
   );

@@ -1,49 +1,52 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Suspense } from "react";
-import ProductGrid from "@/components/ProductGrid";
-import { prisma } from "@/lib/prisma";
+import ProductGrid from "@/components/ProductGrid"; // ✅ debe venir de /components, no de /app
 
-// ✅ Revalidate cada 5 min
-export const revalidate = 300;
-
-export const metadata = {
-  title: "Catálogo | Nexus",
-  description: "Explora todos nuestros productos disponibles.",
-};
-
-// ✅ Helpers de datos — mejor moverlos a /lib si crecen
-async function getCategories() {
-  return prisma.category.findMany();
+// ✅ Tipos básicos
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  offerPrice?: number;
+  isOnOffer: boolean;
+  slug: string;
+  image?: string | null;
+  createdAt: string;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
 }
 
-async function getProducts(categoryId?: string) {
-  return prisma.product.findMany({
-    where: categoryId ? { categoryId: Number(categoryId) } : {},
-    include: { category: true },
-  });
+interface Category {
+  id: number;
+  name: string;
 }
 
-// ✅ Tipado explícito Next.js App Router
-interface PageProps {
-  params: {}; // Si no tienes [slug] dinámicos, déjalo vacío
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
+export default function CatalogPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-export default async function CatalogPage({ searchParams }: PageProps) {
-  const categoryId =
-    typeof searchParams?.categoryId === "string"
-      ? searchParams.categoryId
-      : undefined;
+  useEffect(() => {
+    const fetchData = async () => {
+      const [productsRes, categoriesRes] = await Promise.all([
+        fetch(`/api/products${selectedCategoryId ? `?categoryId=${selectedCategoryId}` : ""}`).then(r => r.json()),
+        fetch("/api/categories").then(r => r.json()),
+      ]);
 
-  const [products, categories] = await Promise.all([
-    getProducts(categoryId),
-    getCategories(),
-  ]);
+      setProducts(productsRes);
+      setCategories(categoriesRes);
+    };
+
+    fetchData();
+  }, [selectedCategoryId]);
 
   return (
     <main className="relative w-full overflow-hidden">
-      {/* Fondo texturizado */}
       <div className="absolute inset-0 -z-10">
         <Image
           src="/FondoTextura.jpg"
@@ -59,23 +62,25 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         <h1 className="text-3xl font-bold mb-8">Catálogo</h1>
 
         <div className="mb-6 flex gap-4 flex-wrap">
-          <Link href="/catalog" className="px-4 py-2 border rounded bg-white">
+          <button
+            onClick={() => setSelectedCategoryId(null)}
+            className="px-4 py-2 border rounded bg-white"
+          >
             Todos
-          </Link>
+          </button>
           {categories.map((cat) => (
-            <Link
+            <button
               key={cat.id}
-              href={`/catalog?categoryId=${cat.id}`}
+              onClick={() => setSelectedCategoryId(cat.id.toString())}
               className="px-4 py-2 border rounded bg-white"
             >
               {cat.name}
-            </Link>
+            </button>
           ))}
         </div>
 
-        <Suspense fallback={<p className="text-center">Cargando productos...</p>}>
-          <ProductGrid products={products} />
-        </Suspense>
+        {/* ✅ Asegúrate de que ProductGrid esté en src/components y exporte correctamente */}
+        <ProductGrid products={products} />
       </div>
     </main>
   );

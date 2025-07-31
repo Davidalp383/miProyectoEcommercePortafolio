@@ -1,25 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
 
-// ✅ ISR: cachea 5 minutos
 export const revalidate = 300;
 
-type Product = {
-  id: number;
-  name: string;
-  slug: string;
-  offerPrice: number | null;
-  price: number;
-  image: string | null;
-};
-
 export default async function OfferBanner() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/offers`,
-    { next: { revalidate: 300 } }
-  );
+  const offers = await prisma.product.findMany({
+    where: { isOnOffer: true },
+    take: 10,
+    orderBy: { createdAt: "desc" },
+  });
 
-  const offers: Product[] = await res.json();
   const offer = offers.length > 0
     ? offers[Math.floor(Math.random() * offers.length)]
     : null;

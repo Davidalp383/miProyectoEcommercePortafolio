@@ -1,31 +1,23 @@
+// ✅ src/components/FeaturedProducts.tsx — versión Server Component optimizada
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  image: string | null;
-  slug: string;
-};
-
-// ⏱️ Revalida cada 5 minutos
-export const revalidate = 300;
+export const revalidate = 60; // ⚡ Habilita ISR cada 60s
 
 export default async function FeaturedProducts() {
-  // 🔍 Busca hasta 4 productos en oferta
-  const offers: Product[] = await prisma.product.findMany({
+  // Primero, productos en oferta
+  const offers = await prisma.product.findMany({
     where: { isOnOffer: true },
     orderBy: { createdAt: "desc" },
     take: 4,
   });
 
-  // Completa con otros si faltan
   let products = offers;
 
+  // Si faltan para completar, trae recientes
   if (offers.length < 4) {
-    const extra: Product[] = await prisma.product.findMany({
+    const extra = await prisma.product.findMany({
       where: { id: { notIn: offers.map((p) => p.id) } },
       orderBy: { createdAt: "desc" },
       take: 4 - offers.length,
@@ -33,7 +25,6 @@ export default async function FeaturedProducts() {
     products = [...offers, ...extra];
   }
 
-  // Si no hay nada, no renderiza sección
   if (products.length === 0) return null;
 
   return (

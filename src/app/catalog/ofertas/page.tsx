@@ -14,9 +14,10 @@ type Product = {
 };
 
 export default async function OfertasPage() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/offers`, {
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/offers`,
+    { cache: "no-store" }
+  );
 
   const products: Product[] = await res.json();
 
@@ -62,7 +63,7 @@ export default async function OfertasPage() {
                   />
                 ) : (
                   <Image
-                    src="/placeholder.jpg" // Coloca una imagen placeholder en /public/placeholder.jpg
+                    src="/placeholder.jpg"
                     alt="Sin imagen"
                     width={500}
                     height={500}
@@ -70,7 +71,6 @@ export default async function OfertasPage() {
                   />
                 )}
 
-                {/* Badge de descuento */}
                 {p.offerPrice !== null && p.offerPrice < p.price && (
                   <span className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                     -{Math.round(100 - (p.offerPrice / p.price) * 100)}%
