@@ -56,3 +56,5 @@ coverage/
 
 # === Optional: otros artefactos ===
 dist/
+
+.vercel

@@ -15,9 +15,10 @@ type Product = {
 
 export default async function OfertasPage() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/products/offers`,
+    `${process.env.NODE_ENV === "production" ? "https://" + process.env.VERCEL_URL : "http://localhost:3000"}/api/products/offers`,
     { cache: "no-store" }
-  );
+);
+
 
   const products: Product[] = await res.json();
 
