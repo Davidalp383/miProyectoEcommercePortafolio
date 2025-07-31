@@ -78,7 +78,7 @@ export default function SignInPage() {
 
         <p className="text-center mt-6 text-sm text-[#1C1C1E]/80">
           ¿No tienes cuenta?{" "}
-          <Link href="/auth/signup" className="text-[#F97316] font-semibold hover:underline">
+          <Link href="/accounts/signup" className="text-[#F97316] font-semibold hover:underline">
             Regístrate aquí
           </Link>
         </p>
