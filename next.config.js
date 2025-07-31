@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    domains: ["res.cloudinary.com"],
     remotePatterns: [
       {
         protocol: 'https',
@@ -13,18 +14,6 @@ const nextConfig = {
       },
     ],
   },
-
-  // ✅ App Router está habilitado por defecto desde Next.js 13.4+
-  // No es necesario 'experimental.appDir: true' → ¡elimínalo!
-  
-  images: {
-    domains: ["res.cloudinary.com"],
-  },
-
-  // ✅ Otras configuraciones opcionales que podrías considerar:
-  // trailingSlash: false,
-  // poweredByHeader: false,
 };
 
-// ✅ Envuelve la configuración con bundleAnalyzer
 module.exports = withBundleAnalyzer(nextConfig);
